@@ -7,14 +7,28 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class LoginViewController: UIViewController {
-
+    
     @IBOutlet weak var emailTextfield: UITextField!
     @IBOutlet weak var passwordTextfield: UITextField!
     
-
-    @IBAction func loginPressed(_ sender: UIButton) {
-    }
     
+    //Loginボタン押下時のアクション
+    @IBAction func loginPressed(_ sender: UIButton) {
+        //emailTextfieldとpasswordTextfieldの情報を使用し
+        if let email = emailTextfield.text, let password = passwordTextfield.text {
+            //FirebaseAuthenticationデータベースに保管されているmailとpasswordを照合しサインイン
+            Auth.auth().signIn(withEmail: email, password: password) { authResult, error in
+                if let e = error {
+                    print(e)
+                } else {
+                    //errorがなければchatVireController画面に行く
+                    self.performSegue(withIdentifier: K.loginSegue, sender: self)
+                }
+            }
+        }
+        
+    }
 }
