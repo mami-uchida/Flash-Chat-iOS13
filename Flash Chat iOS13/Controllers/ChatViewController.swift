@@ -119,27 +119,17 @@ extension ChatViewController:UITableViewDataSource {
     
         let message = messages[indexPath.row]
         //tableViewにある行の数だけ呼び出されその度に特定のセルを要求
-        //MessageCellクラスのすべてのプロパティを取得するため、再利用可能なセルをas!でキャストする
-        let cell = tableView.dequeueReusableCell(withIdentifier: K.cellIdentifier, for: indexPath)
-        as! MessageCell
+        //MessageCellクラスのすべてのプロパティを取得するためdequeueReusableCellをはguard letでアンラップしダウンキャスト
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: K.cellIdentifier, for: indexPath) as? MessageCell else { return UITableViewCell()}
         //indexPathを使ってメッセージを表示
         cell.label.text = message.body
         
-        //This is a message form the currrent user.
-        if message.sender == Auth.auth().currentUser?.email {
-            cell.leftImageView.isHidden = true
-            cell.rightImageView.isHidden = false
-            cell.messageBubble.backgroundColor = UIColor(named: K.BrandColors.lightPurple)
-            cell.label.textColor = UIColor(named: K.BrandColors.purple)
-        }
-        //This is a message from another sender.
-        else {
-            cell.leftImageView.isHidden = false
-            cell.rightImageView.isHidden = true
-            cell.messageBubble.backgroundColor = UIColor(named: K.BrandColors.purple)
-            cell.label.textColor = UIColor(named: K.BrandColors.lightPurple)
-        }
-        
+        //trueかfalseで設定が変わる時は三項演算子
+        let isCurrentUser = message.sender == Auth.auth().currentUser?.email
+              cell.leftImageView.isHidden = isCurrentUser
+              cell.rightImageView.isHidden = !isCurrentUser
+              cell.messageBubble.backgroundColor = isCurrentUser ? UIColor(named: K.BrandColors.lightPurple) : UIColor(named: K.BrandColors.purple)
+              cell.label.textColor = isCurrentUser ? UIColor(named: K.BrandColors.purple) : UIColor(named: K.BrandColors.lightPurple)
         
         return cell
     }
