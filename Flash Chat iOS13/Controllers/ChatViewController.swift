@@ -43,30 +43,30 @@ class ChatViewController: UIViewController {
             .addSnapshotListener { (querySnapshot, error) in
                 
                 self.messages = []
-                
+                //ifでエラーチェックしたら、後続に進むことはないのでreturnして終了
                 if let e = error {
                     print("There was an issue rerieving data from Firestore, \(e)")
-                } else {
-                    if let snapshotDocuments = querySnapshot?.documents {
-                        for doc in snapshotDocuments {
-                            let data = doc.data()
-                            if let messageSender = data[K.FStore.senderField] as? String,
-                               let messageBody = data[K.FStore.bodyField] as? String {
-                                let newMessage =  Message(sender: messageSender, body: messageBody)
-                                self.messages.append(newMessage)
-                                
-                                DispatchQueue.main.async {
-                                    self.tableView.reloadData()
-                                    let indexPath = IndexPath(row: self.messages.count - 1, section: 0)
-                                    self.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
-                                }
-                            }
-                            
-                        }
+                    return
+                }
+                //可能な限り、if letでブロックを囲むより、guardで早期リターンしてブロックの大きさを小さく保つ
+                //（深すぎるネストはコードチェックツールでチェックが入り、修正が必要になる場合があるため）
+                guard let snapshotDocuments = querySnapshot?.documents else { return }
+                for doc in snapshotDocuments {
+                    let data = doc.data()
+                    guard let messageSender = data[K.FStore.senderField] as? String,
+                          let messageBody = data[K.FStore.bodyField] as? String else { return }
+                    let newMessage =  Message(sender: messageSender, body: messageBody)
+                    self.messages.append(newMessage)
+                    
+                    DispatchQueue.main.async {
+                        self.tableView.reloadData()
+                        let indexPath = IndexPath(row: self.messages.count - 1, section: 0)
+                        self.tableView.scrollToRow(at: indexPath, at: .top, animated: true)
                     }
                 }
             }
     }
+    
     
     @IBAction func sendPressed(_ sender: UIButton) {
         if let messageBody = messageTextfield.text, let messageSender = Auth.auth().currentUser?.email{
@@ -82,12 +82,10 @@ class ChatViewController: UIViewController {
                     DispatchQueue.main.async {
                         self.messageTextfield.text = ""
                     }
-                    
                 }
             }
         }
     }
-    
     
     @IBAction func logOutPressed(_ sender: UIBarButtonItem) {
         do {
@@ -116,7 +114,7 @@ extension ChatViewController:UITableViewDataSource {
     
     //tableViewの各行で表示すべきUITableViewCellを要求
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    
+        
         let message = messages[indexPath.row]
         //tableViewにある行の数だけ呼び出されその度に特定のセルを要求
         //MessageCellクラスのすべてのプロパティを取得するためdequeueReusableCellをはguard letでアンラップしダウンキャスト
@@ -126,10 +124,10 @@ extension ChatViewController:UITableViewDataSource {
         
         //trueかfalseで設定が変わる時は三項演算子
         let isCurrentUser = message.sender == Auth.auth().currentUser?.email
-              cell.leftImageView.isHidden = isCurrentUser
-              cell.rightImageView.isHidden = !isCurrentUser
-              cell.messageBubble.backgroundColor = isCurrentUser ? UIColor(named: K.BrandColors.lightPurple) : UIColor(named: K.BrandColors.purple)
-              cell.label.textColor = isCurrentUser ? UIColor(named: K.BrandColors.purple) : UIColor(named: K.BrandColors.lightPurple)
+        cell.leftImageView.isHidden = isCurrentUser
+        cell.rightImageView.isHidden = !isCurrentUser
+        cell.messageBubble.backgroundColor = isCurrentUser ? UIColor(named: K.BrandColors.lightPurple) : UIColor(named: K.BrandColors.purple)
+        cell.label.textColor = isCurrentUser ? UIColor(named: K.BrandColors.purple) : UIColor(named: K.BrandColors.lightPurple)
         
         return cell
     }

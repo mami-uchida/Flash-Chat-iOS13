@@ -25,17 +25,17 @@ class RegisterViewController: UIViewController {
     @IBAction func registerPressed(_ sender: UIButton) {
         //emailTextfieldとpasswordTextfieldの情報を
         guard let email = emailTextfield.text,let password = passwordTextfield.text else { return }
-            //Firebaseに取り込み新規ユーザー登録するため一度アカウント情報を登録する
-            Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
-                //passwordが６文字以上ない場合はerrorとなりiphoneの各言語にローカライズされたエラー文を表示
-                if let e = error {
-                    print(e.localizedDescription)
-                } else {
-                    //errorがなければchatVireController画面に行く
-                    self.performSegue(withIdentifier: K.registerSegue, sender: self)
-                }
+        //Firebaseに取り込み新規ユーザー登録するため一度アカウント情報を登録する
+        Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
+            //passwordが６文字以上ない場合はerrorとなりiphoneの各言語にローカライズされたエラー文を表示
+            if let e = error {
+                print(e.localizedDescription)
+            } else {
+                //errorがなければchatVireController画面に行く
+                self.performSegue(withIdentifier: K.registerSegue, sender: self)
             }
         }
-        
     }
+    
+}
 
